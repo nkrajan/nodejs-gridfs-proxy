@@ -1,0 +1,15 @@
+{
+    "name": "gridfs-proxy",
+    "version": "0.0.1",
+    "description": "GridFs proxy",
+    "keywords": [],
+    "author": "Andrew Tch <andrew.tchircoff@gmail.com>",
+    "dependencies": {
+        "yaml-config": "",
+        "mongodb": ""
+    },
+    "main": "server",
+    "engines": {
+        "node" : ">=0.4.x"
+    }
+}

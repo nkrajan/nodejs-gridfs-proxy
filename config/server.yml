@@ -1,0 +1,12 @@
+default:
+    listen:
+        host:   127.0.0.1
+        port:   1234
+
+    gridfs:
+        host:               localhost
+        port:               27017
+        auto_reconnect:     true
+        database:           test
+
+    debug: false
