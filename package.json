@@ -5,7 +5,7 @@
     "keywords": [],
     "author": "Andrew Tch <andrew.tchircoff@gmail.com>",
     "dependencies": {
-        "yaml-config": "",
+        "js-yaml": "",
         "mongodb": ""
     },
     "main": "server",
