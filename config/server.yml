@@ -7,6 +7,6 @@ default:
         host:               localhost
         port:               27017
         auto_reconnect:     true
-        database:           test
+        database:           pixlish_gridfs
 
     debug: false

@@ -5,6 +5,7 @@ http = require "http"
 
 class GridfsProxyServer
   config = {}
+  database = null
 
   run: ->
     console.log "Starting server..."
@@ -12,11 +13,11 @@ class GridfsProxyServer
     @config = @loadConfig "./config/server.yml"
 
     server = new mongodb.Server @config.gridfs.host, @config.gridfs.port,
-      { auto_reconnect: @config.gridfs.auto_reconnect}
+      { auto_reconnect: @config.gridfs.auto_reconnect }
 
-    database = new mongodb.Db @config.gridfs.database, server, { safe: false }
+    @database = new mongodb.Db @config.gridfs.database, server, { w: 0, native_parser: false }
 
-    database.open @onDatabaseOpen
+    @database.open @onDatabaseOpen
 
   onDatabaseOpen: (error, database) =>
     if error != null
@@ -27,10 +28,40 @@ class GridfsProxyServer
       server = http.createServer this.onRequest
       server.listen @config.listen.port, @config.listen.host
 
-  onRequest: (request, response) ->
+  onRequest: (request, response) =>
     pathObj = url.parse request.url
     path = pathObj.path.substring 1
     console.log "Requested path " + path
+    gridStore = new mongodb.GridStore @database, path, 'r'
+    gridStore.open (error, file) =>
+      if error
+        if error.message == path + ' does not exist'
+          response.writeHead 400, { "Content-Type": "text/plain" }
+          response.end "File not found"
+          console.log "Not found"
+        else
+          response.writeHead 500, { "Content-Type": "text/plain" }
+          response.end "Internal server error"
+          console.log "Internal server error", error
+      else
+        response.writeHead 200, {
+          "Content-Type": file.contentType || @guessMime file.filename
+          "Etag": file.fileId,
+          "Last-Modified": file.uploadDate.toGMTString()
+        }
+        fileStream = file.stream true
+        fileStream.on "data", (data) =>
+          response.write data
+          console.log "data"
+        fileStream.on "end", () =>
+          response.end ''
+          console.log "end"
+
+  guessMime: (filename) ->
+    if filename.match /\.jpg/i
+      return "image/jpeg"
+      
+    "binary/octet-stream"
 
   loadConfig: (file) ->
     config = require file
