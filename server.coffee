@@ -31,7 +31,7 @@ class GridfsProxyServer
   onRequest: (request, response) =>
     pathObj = url.parse request.url
     path = pathObj.path.substring 1
-    console.log "Requested path " + path
+    console.log "-> Requested path " + path
     gridStore = new mongodb.GridStore @database, path, 'r'
     gridStore.open (error, file) =>
       if error
@@ -44,7 +44,6 @@ class GridfsProxyServer
           response.end "Internal server error"
           console.log "Internal server error", error
       else
-        console.log request.headers
         if request.headers['if-none-match'] == file.fileId.toString()
           response.writeHead 304, {
             "Etag": file.fileId,
@@ -74,8 +73,12 @@ class GridfsProxyServer
             console.log "Sent response successfully"
 
   guessMime: (filename) ->
-    if filename.match /\.jpg/i
+    if filename.match /\.jpg$/i
       return "image/jpeg"
+    if filename.match /\.gif$/i
+      return "image/gif"
+    if filename.match /\.png$/i
+      return "image/png"
       
     "binary/octet-stream"
 
