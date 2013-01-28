@@ -15,7 +15,7 @@ class GridfsProxyServer
     server = new mongodb.Server @config.gridfs.host, @config.gridfs.port,
       { auto_reconnect: @config.gridfs.auto_reconnect }
 
-    @database = new mongodb.Db @config.gridfs.database, server, { w: 0, native_parser: false }
+    @database = new mongodb.Db @config.gridfs.database, server, { w: 0, native_parser: true }
 
     @database.open @onDatabaseOpen
 
@@ -36,7 +36,7 @@ class GridfsProxyServer
     gridStore.open (error, file) =>
       if error
         if error.message == path + ' does not exist'
-          response.writeHead 400, { "Content-Type": "text/plain" }
+          response.writeHead 404, { "Content-Type": "text/plain" }
           response.end "File not found"
           console.log "Not found"
         else
@@ -51,7 +51,14 @@ class GridfsProxyServer
         }
         fileStream = file.stream true
         fileStream.on "data", (data) =>
-          response.write data
+          if @config.php_fix
+            if data.length > 4 and data[2] == 0x02 and data[3] == 0x00
+              console.log "Fixing unsupported BinaryType 2"
+              response.write data.slice 4
+            else
+              response.write data
+          else
+            response.write data
           console.log "data"
         fileStream.on "end", () =>
           response.end ''

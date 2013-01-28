@@ -10,3 +10,6 @@ default:
         database:           pixlish_gridfs
 
     debug: false
+    # php uses, by default, BinaryData type 2, which node does not support
+    # the workaround is ot strip first 4 bytes from stream if bytes 3-4 are 0x0002
+    php_fix: true
