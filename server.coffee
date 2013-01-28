@@ -44,25 +44,34 @@ class GridfsProxyServer
           response.end "Internal server error"
           console.log "Internal server error", error
       else
-        response.writeHead 200, {
-          "Content-Type": file.contentType || @guessMime file.filename
-          "Etag": file.fileId,
-          "Last-Modified": file.uploadDate.toGMTString()
-        }
-        fileStream = file.stream true
-        fileStream.on "data", (data) =>
-          if @config.php_fix
-            if data.length > 4 and data[2] == 0x02 and data[3] == 0x00
-              console.log "Fixing unsupported BinaryType 2"
-              response.write data.slice 4
+        console.log request.headers
+        if request.headers['if-none-match'] == file.fileId.toString()
+          response.writeHead 304, {
+            "Etag": file.fileId,
+            "Last-Modified": file.uploadDate.toGMTString()
+          }
+          response.end ""
+          console.log "Returned 304 response"
+        else
+          # plain response
+          response.writeHead 200, {
+            "Content-Type": file.contentType || @guessMime file.filename
+            "Etag": file.fileId,
+            "Last-Modified": file.uploadDate.toGMTString()
+          }
+          fileStream = file.stream true
+          fileStream.on "data", (data) =>
+            if @config.php_fix
+              if data.length > 4 and data[2] == 0x02 and data[3] == 0x00
+                console.log "Fixing unsupported BinaryType 2"
+                response.write data.slice 4
+              else
+                response.write data
             else
               response.write data
-          else
-            response.write data
-          console.log "data"
-        fileStream.on "end", () =>
-          response.end ''
-          console.log "end"
+          fileStream.on "end", () =>
+            response.end ""
+            console.log "Sent response successfully"
 
   guessMime: (filename) ->
     if filename.match /\.jpg/i
