@@ -6,7 +6,8 @@
     "author": "Andrew Tch <andrew.tchircoff@gmail.com>",
     "dependencies": {
         "js-yaml": "",
-        "mongodb": ""
+        "mongodb": "",
+        "cluster": ""
     },
     "main": "server",
     "engines": {

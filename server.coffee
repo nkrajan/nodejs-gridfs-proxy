@@ -2,6 +2,7 @@ require "js-yaml"
 mongodb = require "mongodb"
 url = require "url"
 http = require "http"
+cluster = require "cluster"
 
 class GridfsProxyServer
   config = {}
@@ -102,4 +103,20 @@ class GridfsProxyServer
 
 # start server
 gridfsProxyServer = new GridfsProxyServer
-gridfsProxyServer.run()
+
+if cluster.isMaster
+  for i in [0...require('os').cpus().length]
+    worker = cluster.fork()
+    console.log "forked ok"
+
+  cluster.on 'listening', (worker) ->
+    console.log 'Worker %s is listening', worker.process.pid
+
+  cluster.on 'death', (worker) ->
+    console.log 'Worker %s died.', worker.process.pid
+
+  cluster.on 'disconnect', (worker) ->
+    console.log 'The worker #' + worker.id + ' has disconnected'
+else
+  console.log "entering run stage"
+  gridfsProxyServer.run()
