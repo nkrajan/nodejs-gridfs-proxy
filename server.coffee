@@ -60,14 +60,7 @@ class GridfsProxyServer
           }
           fileStream = file.stream true
           fileStream.on "data", (data) =>
-            if @config.php_fix
-              if data.length > 4 and (data[2] == 0x02 or data[2] == 0x00) and data[3] == 0x00
-                console.log "Fixing unsupported BinaryType 2"
-                response.write data.slice 4
-              else
-                response.write data
-            else
-              response.write data
+            response.write data
           fileStream.on "end", () =>
             response.end ""
             console.log "Sent response successfully"
