@@ -10,3 +10,5 @@ default:
         database:           pixlish_gridfs
 
     debug: false
+
+    include_query:          false

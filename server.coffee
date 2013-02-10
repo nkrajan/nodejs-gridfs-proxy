@@ -32,7 +32,7 @@ class GridfsProxyServer
 
   onRequest: (request, response) =>
     pathObj = url.parse request.url
-    path = pathObj.path.substring 1
+    path = if @config.include_query then pathObj.path.substring 1 else pathObj.pathname.substring 1
     console.log "-> Requested path " + path
     gridStore = new mongodb.GridStore @database, path, 'r'
     gridStore.open (error, file) =>
