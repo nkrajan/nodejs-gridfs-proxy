@@ -3,6 +3,7 @@ mongodb = require "mongodb"
 url = require "url"
 http = require "http"
 cluster = require "cluster"
+mime = require "mime"
 
 class GridfsProxyServer
   config = {}
@@ -67,14 +68,7 @@ class GridfsProxyServer
             console.log "Sent response successfully"
 
   guessMime: (filename) ->
-    if filename.match /\.jpg$/i
-      return "image/jpeg"
-    if filename.match /\.gif$/i
-      return "image/gif"
-    if filename.match /\.png$/i
-      return "image/png"
-      
-    "binary/octet-stream"
+    mime.lookup filename
 
   loadConfig: (file) ->
     config = require file

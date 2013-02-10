@@ -7,7 +7,8 @@
     "dependencies": {
         "js-yaml": "",
         "mongodb": "",
-        "cluster": ""
+        "cluster": "",
+        "mime": ""
     },
     "main": "server",
     "engines": {
